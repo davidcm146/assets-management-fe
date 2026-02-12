@@ -45,6 +45,8 @@ import {
     type UpdateLoanSlipFormValues,
 } from "@/features/loan-slips/update-loan-slip.schema";
 import { LOAN_STATUS, type LoanSlip } from "@/types/loan-slip";
+import type { ApiError } from "@/types/api-error";
+import { handleApiError } from "@/api/error-handler";
 
 interface UpdateLoanSlipDialogProps {
     open: boolean;
@@ -125,19 +127,25 @@ export function UpdateLoanSlipDialog({
     };
 
     const handleFormSubmit = async (values: UpdateLoanSlipFormValues) => {
-        let payload = values;
+        try {
+            let payload = values;
+    
+            if (isAdmin) {
+                payload = {
+                    status: values.status,
+                    borrowed_date: values.borrowed_date,
+                    returned_date: values.returned_date,
+                };
+            }
+    
+            await onSubmit(payload);
+            form.reset();
+            onOpenChange(false);
+        } catch (error: any) {
+            const apiError = error as ApiError
 
-        if (isAdmin) {
-            payload = {
-                status: values.status,
-                borrowed_date: values.borrowed_date,
-                returned_date: values.returned_date,
-            };
+            handleApiError(apiError)
         }
-
-        await onSubmit(payload);
-        form.reset();
-        onOpenChange(false);
     };
 
 

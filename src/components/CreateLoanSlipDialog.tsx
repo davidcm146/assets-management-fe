@@ -37,6 +37,8 @@ import {
     createLoanSlipSchema,
     type CreateLoanSlipFormValues,
 } from "@/features/loan-slips/loan-slip.schema";
+import { handleApiError } from "@/api/error-handler";
+import type { ApiError } from "@/types/api-error";
 
 interface CreateLoanSlipDialogProps {
     open: boolean;
@@ -82,15 +84,27 @@ export function CreateLoanSlipDialog({
         onOpenChange(isOpen);
     };
 
-    const handleFormSubmit = async (
-        values: CreateLoanSlipFormValues
-    ) => {
-        await onSubmit(values);
+    const handleFormSubmit = async (values: CreateLoanSlipFormValues) => {
+        try {
+            await onSubmit(values);
 
-        form.reset();
-        setImagePreviews([]);
-        onOpenChange(false);
+            form.reset();
+            setImagePreviews([]);
+            onOpenChange(false);
+        } catch (err: any) {
+            const apiError = err as ApiError;
+
+            // if (apiError.details) {
+            //     Object.entries(apiError.details).forEach(([field, msg]) => {
+            //         form.setError(field as any, { message: String(msg) });
+            //     });
+            //     return;
+            // }
+
+            handleApiError(apiError);
+        }
     };
+
 
 
     const handleImageAdd = useCallback(
