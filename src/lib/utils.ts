@@ -1,5 +1,6 @@
 import { LOAN_STATUS } from "@/types/loan-slip";
 import { clsx, type ClassValue } from "clsx"
+import dayjs from "dayjs";
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
@@ -18,3 +19,8 @@ export function mapStatusToNumber(status: string | number): 1 | 2 {
   // fallback an toàn
   return LOAN_STATUS.BORROWING;
 }
+
+export const formatDisplay = (date: Date | undefined) => {
+    if (!date) return null;
+    return dayjs(date).format("DD/MM/YYYY");
+  };
