@@ -8,7 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
@@ -45,6 +44,7 @@ import {
     type UpdateLoanSlipFormValues,
 } from "@/features/loan-slips/update-loan-slip.schema";
 import { LOAN_STATUS, type LoanSlip } from "@/types/loan-slip";
+import { handleApiError } from "@/api/error-handler";
 
 interface UpdateLoanSlipDialogProps {
     open: boolean;
@@ -125,19 +125,25 @@ export function UpdateLoanSlipDialog({
     };
 
     const handleFormSubmit = async (values: UpdateLoanSlipFormValues) => {
-        let payload = values;
+        try {
+            let payload = values;
+    
+            if (isAdmin) {
+                payload = {
+                    status: values.status,
+                    borrowed_date: values.borrowed_date,
+                    returned_date: values.returned_date,
+                };
+            }
+    
+            await onSubmit(payload);
+            form.reset();
+            onOpenChange(false);
+        } catch (error: any) {
+            const apiError = error
 
-        if (isAdmin) {
-            payload = {
-                status: values.status,
-                borrowed_date: values.borrowed_date,
-                returned_date: values.returned_date,
-            };
+            handleApiError(apiError.response.data)
         }
-
-        await onSubmit(payload);
-        form.reset();
-        onOpenChange(false);
     };
 
 
@@ -318,6 +324,7 @@ export function UpdateLoanSlipDialog({
                                         <SelectContent>
                                             <SelectItem value={String(LOAN_STATUS.BORROWING)}>Đang mượn</SelectItem>
                                             <SelectItem value={String(LOAN_STATUS.RETURNED)}>Đã trả</SelectItem>
+                                            <SelectItem value={String(LOAN_STATUS.OVERDUE)}>Quá hạn</SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />
@@ -433,12 +440,36 @@ export function UpdateLoanSlipDialog({
                         {isIT && <FormField
                             control={form.control}
                             name="new_images"
-                            render={() => (
+                            render={() => {
+                                const newImagesError = form.formState.errors.new_images;
+                                const existingImagesError = form.formState.errors.existing_images;
+                                // Collect all image-related error messages
+                                const errorMessages: string[] = [];
+                                for (const imagesError of [newImagesError, existingImagesError]) {
+                                    if (imagesError) {
+                                        if (imagesError.root?.message) {
+                                            errorMessages.push(imagesError.root.message);
+                                        }
+                                        if (imagesError.message) {
+                                            errorMessages.push(imagesError.message);
+                                        }
+                                        if (Array.isArray(imagesError)) {
+                                            for (const itemError of imagesError) {
+                                                if (itemError?.message) {
+                                                    errorMessages.push(itemError.message);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                const uniqueErrors = [...new Set(errorMessages)];
+
+                                return (
                                 <FormItem>
                                     <FormLabel>
                                         Hình ảnh
                                         <span className="text-muted-foreground font-normal">
-                                            (toi da 5)
+                                            {" "}(tối đa 5)
                                         </span>
                                     </FormLabel>
                                     <FormControl>
@@ -516,9 +547,21 @@ export function UpdateLoanSlipDialog({
                                             />
                                         </div>
                                     </FormControl>
-                                    <FormMessage />
+                                    {uniqueErrors.length > 0 && (
+                                        <div className="space-y-1">
+                                            {uniqueErrors.map((msg) => (
+                                                <p
+                                                    key={msg}
+                                                    className="text-sm font-medium text-destructive"
+                                                >
+                                                    {msg}
+                                                </p>
+                                            ))}
+                                        </div>
+                                    )}
                                 </FormItem>
-                            )}
+                                );
+                            }}
                         />}
 
                         <DialogFooter className="pt-2">

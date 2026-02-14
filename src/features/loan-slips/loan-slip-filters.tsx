@@ -20,6 +20,10 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+
+dayjs.extend(customParseFormat);
+
 import {
   ArrowDownAZ,
   ArrowUpAZ,
@@ -211,6 +215,7 @@ export function LoanSlipFilters({
                   <SelectItem value="__all__">Tất cả</SelectItem>
                   <SelectItem value="borrowing">Đang mượn</SelectItem>
                   <SelectItem value="returned">Đã trả</SelectItem>
+                  <SelectItem value="overdue">Quá hạn</SelectItem>
                 </SelectContent>
               </Select>
             </FilterField>
@@ -288,8 +293,11 @@ function DateRangeFilter({
   onFromChange: (val: string | undefined) => void;
   onToChange: (val: string | undefined) => void;
 }) {
-  const fromDate = from ? new Date(from) : undefined;
-  const toDate = to ? new Date(to) : undefined;
+  const fromParsed = from ? dayjs(from, "DD-MM-YYYY", true) : undefined;
+  const fromDate = fromParsed?.isValid() ? fromParsed.toDate() : undefined;
+
+  const toParsed = to ? dayjs(to, "DD-MM-YYYY", true) : undefined;
+  const toDate = toParsed?.isValid() ? toParsed.toDate() : undefined;
 
   const formatDisplay = (date: Date | undefined) => {
     if (!date) return null;
@@ -322,11 +330,14 @@ function DateRangeFilter({
               selected={fromDate}
               onSelect={(date) =>
                 onFromChange(
-                  date ? dayjs(date).format("DD-MM-YYYY") : undefined,
+                  date
+                    ? dayjs(date as Date).format("DD-MM-YYYY")
+                    : undefined
                 )
               }
               initialFocus
             />
+
           </PopoverContent>
         </Popover>
         {from && (
@@ -367,11 +378,14 @@ function DateRangeFilter({
               selected={toDate}
               onSelect={(date) =>
                 onToChange(
-                  date ? dayjs(date).format("DD-MM-YYYY") : undefined,
+                  date
+                    ? dayjs(date as Date).format("DD-MM-YYYY")
+                    : undefined
                 )
               }
               initialFocus
             />
+
           </PopoverContent>
         </Popover>
         {to && (

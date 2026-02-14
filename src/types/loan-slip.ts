@@ -16,7 +16,8 @@ export interface LoanSlip {
 
 export type LoanSlipStatus =
   | "Đang mượn"
-  | "Đã trả";
+  | "Đã trả"
+  | "Quá hạn";
 
 export interface LoanSlipQuery {
   search?: string;
@@ -57,6 +58,7 @@ export interface CreateLoanSlipPayload {
 export const LOAN_STATUS = {
   BORROWING: 1,
   RETURNED: 2,
+  OVERDUE: 3,
 } as const;
 
 export type LoanStatus = typeof LOAN_STATUS[keyof typeof LOAN_STATUS];
@@ -66,7 +68,7 @@ export interface UpdateLoanSlipPayload {
   borrower_name?: string;
   borrowed_date?: string;
   returned_date?: string;
-  status?: 1 | 2;
+  status?: 1 | 2 | 3;
   department?: string;
   position?: string;
   description?: string;

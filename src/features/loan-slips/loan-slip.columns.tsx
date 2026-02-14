@@ -18,6 +18,11 @@ const statusConfig: Record<string, { label: string; className: string }> = {
     className:
       "bg-emerald-100 text-emerald-800 border-emerald-200 hover:bg-emerald-100",
   },
+  overdue: {
+    label: "Quá hạn",
+    className:
+      "bg-red-100 text-red-800 border-red-200 hover:bg-red-100",
+  },
 };
 
 export function createLoanSlipColumns(
