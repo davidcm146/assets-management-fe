@@ -26,7 +26,6 @@ export const createLoanSlipSchema = z
 
     description: z
       .string()
-      .min(10, "Mô tả phải có ít nhất 10 ký tự")
       .max(500, "Mô tả không được vượt quá 500 ký tự")
       .optional(),
 

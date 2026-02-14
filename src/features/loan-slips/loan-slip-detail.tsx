@@ -164,10 +164,6 @@ export default function LoanSlipDetail({ id }: LoanSlipDetailProps) {
   }
 
   const status = statusConfig[slip.status];
-  const borrowedDays = slip.returned_date
-    ? dayjs(slip.returned_date).diff(dayjs(slip.borrowed_date), "day")
-    : dayjs().diff(dayjs(slip.borrowed_date), "day");
-
   return (
     <div className="flex flex-col gap-6">
       {/* Back + Title */}
@@ -258,20 +254,6 @@ export default function LoanSlipDetail({ id }: LoanSlipDetailProps) {
                 ) : (
                   <span className="text-muted-foreground">Chua tra</span>
                 )
-              }
-            />
-            <InfoField
-              icon={<Clock className="h-4 w-4" />}
-              label="So ngay muon"
-              value={
-                <span className="tabular-nums">
-                  {borrowedDays} ngay
-                  {!slip.returned_date && (
-                    <span className="ml-1.5 text-xs text-amber-600">
-                      (dang muon)
-                    </span>
-                  )}
-                </span>
               }
             />
           </div>

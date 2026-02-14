@@ -44,13 +44,10 @@ export default function Login() {
 
       toast.success("Đăng nhập thành công");
     } catch (error: any) {
-      const message =
-        error?.message
+      const message = error?.message
 
       setError("username", { message });
       setError("password", { message });
-
-      toast.error("Đăng nhập thất bại");
     }
   };
 

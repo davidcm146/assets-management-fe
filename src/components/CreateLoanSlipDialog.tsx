@@ -38,7 +38,6 @@ import {
     type CreateLoanSlipFormValues,
 } from "@/features/loan-slips/loan-slip.schema";
 import { handleApiError } from "@/api/error-handler";
-import type { ApiError } from "@/types/api-error";
 
 interface CreateLoanSlipDialogProps {
     open: boolean;
@@ -92,20 +91,11 @@ export function CreateLoanSlipDialog({
             setImagePreviews([]);
             onOpenChange(false);
         } catch (err: any) {
-            const apiError = err as ApiError;
+            const apiError = err;
 
-            // if (apiError.details) {
-            //     Object.entries(apiError.details).forEach(([field, msg]) => {
-            //         form.setError(field as any, { message: String(msg) });
-            //     });
-            //     return;
-            // }
-
-            handleApiError(apiError);
+            handleApiError(apiError.response.data);
         }
     };
-
-
 
     const handleImageAdd = useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -368,7 +358,32 @@ export function CreateLoanSlipDialog({
                         <FormField
                             control={form.control}
                             name="images"
-                            render={() => (
+                            render={() => {
+                                const imagesError = form.formState.errors.images;
+                                // Collect all image-related error messages
+                                const errorMessages: string[] = [];
+                                if (imagesError) {
+                                    // Root-level error (e.g. "Tối đa 5 hình ảnh")
+                                    if (imagesError.root?.message) {
+                                        errorMessages.push(imagesError.root.message);
+                                    }
+                                    // Top-level message (e.g. from .max())
+                                    if (imagesError.message) {
+                                        errorMessages.push(imagesError.message);
+                                    }
+                                    // Per-item errors (e.g. file size, file type)
+                                    if (Array.isArray(imagesError)) {
+                                        for (const itemError of imagesError) {
+                                            if (itemError?.message) {
+                                                errorMessages.push(itemError.message);
+                                            }
+                                        }
+                                    }
+                                }
+                                // Deduplicate
+                                const uniqueErrors = [...new Set(errorMessages)];
+
+                                return (
                                 <FormItem>
                                     <FormLabel>
                                         Hình ảnh{" "}
@@ -429,9 +444,21 @@ export function CreateLoanSlipDialog({
                                             />
                                         </div>
                                     </FormControl>
-                                    <FormMessage />
+                                    {uniqueErrors.length > 0 && (
+                                        <div className="space-y-1">
+                                            {uniqueErrors.map((msg) => (
+                                                <p
+                                                    key={msg}
+                                                    className="text-sm font-medium text-destructive"
+                                                >
+                                                    {msg}
+                                                </p>
+                                            ))}
+                                        </div>
+                                    )}
                                 </FormItem>
-                            )}
+                                );
+                            }}
                         />
 
                         <DialogFooter className="pt-2">

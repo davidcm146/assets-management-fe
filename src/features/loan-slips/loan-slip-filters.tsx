@@ -215,6 +215,7 @@ export function LoanSlipFilters({
                   <SelectItem value="__all__">Tất cả</SelectItem>
                   <SelectItem value="borrowing">Đang mượn</SelectItem>
                   <SelectItem value="returned">Đã trả</SelectItem>
+                  <SelectItem value="overdue">Quá hạn</SelectItem>
                 </SelectContent>
               </Select>
             </FilterField>

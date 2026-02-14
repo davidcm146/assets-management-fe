@@ -29,7 +29,6 @@ export const updateLoanSlipSchema = z
 
     description: z
       .string()
-      .min(10, "Mô tả phải có ít nhất 10 ký tự")
       .max(500, "Mô tả tối đa 500 ký tự")
       .optional()
       .or(z.literal("")),
@@ -40,6 +39,7 @@ export const updateLoanSlipSchema = z
       .union([
         z.literal(LOAN_STATUS.BORROWING),
         z.literal(LOAN_STATUS.RETURNED),
+        z.literal(LOAN_STATUS.OVERDUE),
       ])
       .optional(),
 
