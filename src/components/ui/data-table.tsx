@@ -121,7 +121,7 @@ export function DataTable<TData>({
                     />
                   </svg>
                   <p className="text-sm text-muted-foreground">
-                    Khong co du lieu
+                    Không có dữ liệu
                   </p>
                 </div>
               </TableCell>

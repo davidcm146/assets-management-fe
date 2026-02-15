@@ -117,17 +117,24 @@ export function createLoanSlipColumns(
     {
       id: "actions",
       header: "",
-      cell: ({ row }) => (
+      cell: ({ row }) => {
+        console.log(row.original.status);
+        const status = row.original.status;
+        const isReadOnly = status === "returned" || status === "overdue";
+
+        return (
         <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-1.5 text-muted-foreground hover:text-foreground"
-            onClick={() => onEdit(row.original)}
-          >
-            <Pencil className="h-3.5 w-3.5" />
-            Cập nhật
-          </Button>
+          {!isReadOnly && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1.5 text-muted-foreground hover:text-foreground"
+              onClick={() => onEdit(row.original)}
+            >
+              <Pencil className="h-3.5 w-3.5" />
+              Cập nhật
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"
@@ -138,7 +145,8 @@ export function createLoanSlipColumns(
             Chi tiết
           </Button>
         </div>
-      ),
+        );
+      },
     },
   ];
 }

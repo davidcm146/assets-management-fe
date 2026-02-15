@@ -66,11 +66,16 @@ export default function LoanSlipManagement() {
     setCreateDialogOpen(false);
     toast.success("Tạo phiếu mượn thành công")
 
-    if (query.page === 1) {
-      setData((prev) => [created, ...prev]);
+    try {
+      const res = await fetchLoanSlips({ page: 1, limit: query.limit! });
+      setData(res.items);
+      setTotal(res.total);
+    } catch (error) {
+      if (query.page === 1) {
+        setData((prev) => [created, ...prev]);
+      }
+      setTotal((prev) => prev + 1);
     }
-
-    setTotal((prev) => prev + 1);
   };
 
   const handleEdit = (loanSlip: LoanSlip) => {

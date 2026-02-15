@@ -305,7 +305,11 @@ export function UpdateLoanSlipDialog({
                         <FormField
                             control={form.control}
                             name="status"
-                            render={({ field }) => (
+                            render={({ field }) => {
+                                const currentStatus = field.value;
+                                const isReturned = currentStatus === LOAN_STATUS.RETURNED;
+
+                                return (
                                 <FormItem>
                                     <FormLabel>
                                         Trạng thái
@@ -322,14 +326,16 @@ export function UpdateLoanSlipDialog({
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            <SelectItem value={String(LOAN_STATUS.BORROWING)}>Đang mượn</SelectItem>
+                                            {!isReturned && (
+                                                <SelectItem value={String(LOAN_STATUS.BORROWING)}>Đang mượn</SelectItem>
+                                            )}
                                             <SelectItem value={String(LOAN_STATUS.RETURNED)}>Đã trả</SelectItem>
-                                            <SelectItem value={String(LOAN_STATUS.OVERDUE)}>Quá hạn</SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />
                                 </FormItem>
-                            )}
+                                );
+                            }}
                         />
 
                         {/* Two columns: Borrowed Date + Returned Date */}

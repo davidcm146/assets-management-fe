@@ -1,9 +1,8 @@
 "use client";
 
 import { useNavigate } from "react-router-dom";
-import { Bell, Search, User } from "lucide-react";
+import { User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -14,6 +13,8 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuth } from "@/features/auth/auth.context";
+import { NotificationList } from "@/features/notifications/notification-list";
+import type { Notification } from "@/types/notification";
 
 export function Header() {
     const navigate = useNavigate();
@@ -24,6 +25,11 @@ export function Header() {
         navigate("/login", { replace: true });
     };
 
+    const handleNotificationClick = (notification: Notification) => {
+        // Handle notification click here - navigate or perform actions
+        console.log("Notification clicked:", notification);
+    };
+
     const initials =
         user?.username
             ?.split(" ")
@@ -32,14 +38,12 @@ export function Header() {
             .toUpperCase() ?? "?";
 
     return (
-        <header className="sticky top-0 z-30 border-b bg-card">
+        <header className="sticky top-0 z-30 border-b pb-1 bg-card">
             <div className="flex h-14 justify-between items-center gap-4 px-4 md:px-6">
                 <SidebarTrigger className="-ml-1" />
 
                 <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon">
-                        <Bell className="h-5 w-5" />
-                    </Button>
+                    <NotificationList onNotificationClick={handleNotificationClick} />
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>

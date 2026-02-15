@@ -27,6 +27,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  AlertTriangle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -35,16 +36,22 @@ const statusConfig: Record<
   { label: string; icon: React.ReactNode; className: string }
 > = {
   borrowing: {
-    label: "Dang muon",
+    label: "Đang mượn",
     icon: <Clock className="h-4 w-4" />,
     className: "bg-amber-50 text-amber-700 border-amber-200",
   },
   returned: {
-    label: "Da tra",
+    label: "Đã trả",
     icon: <CheckCircle2 className="h-4 w-4" />,
     className: "bg-emerald-50 text-emerald-700 border-emerald-200",
   },
+  overdue: {
+    label: "Quá hạn",
+    icon: <AlertTriangle className="h-4 w-4" />,
+    className: "bg-red-50 text-red-700 border-red-200",
+  },
 };
+
 
 function DetailSkeleton() {
   return (
@@ -176,14 +183,14 @@ export default function LoanSlipDetail({ id }: LoanSlipDetailProps) {
             onClick={() => navigate(-1)}
           >
             <ArrowLeft className="h-4 w-4" />
-            <span className="sr-only">Quay lai</span>
+            <span className="sr-only">Quay lại</span>
           </Button>
           <div>
             <h1 className="text-xl font-bold tracking-tight text-foreground text-balance">
-              Chi tiet phieu muon
+              Chi tiết phiếu mượn
             </h1>
             <p className="text-sm text-muted-foreground">
-              Ma phieu: #{slip.id}
+              Mã phiếu: #{slip.id}
             </p>
           </div>
         </div>
@@ -208,7 +215,7 @@ export default function LoanSlipDetail({ id }: LoanSlipDetailProps) {
           </div>
           <div>
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Tai san muon
+              Tài sản mượn
             </p>
             <p className="text-lg font-semibold text-foreground">
               {slip.name}
@@ -221,22 +228,22 @@ export default function LoanSlipDetail({ id }: LoanSlipDetailProps) {
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             <InfoField
               icon={<User className="h-4 w-4" />}
-              label="Nguoi muon"
+              label="Nhà thầu"
               value={slip.borrower_name}
             />
             <InfoField
               icon={<Building2 className="h-4 w-4" />}
-              label="Phong ban"
+              label="Phòng ban"
               value={slip.department}
             />
             <InfoField
               icon={<Briefcase className="h-4 w-4" />}
-              label="Chuc vu"
+              label="Chức vụ"
               value={slip.position}
             />
             <InfoField
               icon={<CalendarDays className="h-4 w-4" />}
-              label="Ngay muon"
+              label="Ngày mượn"
               value={
                 <span className="tabular-nums">
                   {dayjs(slip.borrowed_date).format("DD/MM/YYYY")}
@@ -245,7 +252,7 @@ export default function LoanSlipDetail({ id }: LoanSlipDetailProps) {
             />
             <InfoField
               icon={<CalendarCheck2 className="h-4 w-4" />}
-              label="Ngay tra"
+              label="Ngày trả"
               value={
                 slip.returned_date ? (
                   <span className="tabular-nums">
@@ -265,7 +272,7 @@ export default function LoanSlipDetail({ id }: LoanSlipDetailProps) {
         {slip.images && slip.images.length > 0 && (
           <div className="px-6 py-5">
             <p className="mb-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Hinh anh
+              Hình ảnh
             </p>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
               {slip.images.map((src, i) => (
@@ -293,12 +300,12 @@ export default function LoanSlipDetail({ id }: LoanSlipDetailProps) {
         {slip.images && slip.images.length === 0 && (
           <div className="px-6 py-5">
             <p className="mb-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Hinh anh
+              Hình ảnh
             </p>
             <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border py-10">
               <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
               <p className="text-sm text-muted-foreground">
-                Khong co hinh anh
+                Không có hình ảnh
               </p>
             </div>
           </div>
@@ -373,8 +380,8 @@ export default function LoanSlipDetail({ id }: LoanSlipDetailProps) {
                     type="button"
                     onClick={() => setLightboxIndex(i)}
                     className={`h-1.5 rounded-full transition-all ${i === lightboxIndex
-                        ? "w-6 bg-primary"
-                        : "w-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                      ? "w-6 bg-primary"
+                      : "w-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50"
                       }`}
                   >
                     <span className="sr-only">Anh {i + 1}</span>

@@ -15,9 +15,9 @@ export interface LoanSlip {
 }
 
 export type LoanSlipStatus =
-  | "Đang mượn"
-  | "Đã trả"
-  | "Quá hạn";
+  | "returned"
+  | "borrowing"
+  | "overdue";
 
 export interface LoanSlipQuery {
   search?: string;
