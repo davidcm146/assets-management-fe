@@ -77,6 +77,7 @@ export function UpdateLoanSlipDialog({
 
     const form = useForm<UpdateLoanSlipFormValues>({
         resolver: zodResolver(updateLoanSlipSchema),
+        mode: "onChange",
         defaultValues: {
             name: "",
             borrower_name: "",
@@ -92,7 +93,7 @@ export function UpdateLoanSlipDialog({
         },
     });
 
-    const { isSubmitting } = form.formState;
+    const { isSubmitting, isValid } = form.formState;
     const existingImages = form.watch("existing_images");
     const newImages = form.watch("new_images");
     const totalImages = (existingImages?.length ?? 0) + (newImages?.length ?? 0);
@@ -579,7 +580,7 @@ export function UpdateLoanSlipDialog({
                             >
                                 Hủy
                             </Button>
-                            <Button type="submit" disabled={isSubmitting} className="bg-blue-700 hover:bg-blue-500">
+                            <Button type="submit" disabled={ isSubmitting || !isValid } className="bg-blue-700 hover:bg-blue-500">
                                 {isSubmitting && (
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 )}

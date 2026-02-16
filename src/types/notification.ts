@@ -11,7 +11,16 @@ export interface Notification {
   is_read: boolean;
   read_at: string | null;
   created_at: string;
+  payload?: NotificationPayload
 }
+
+export interface NotificationPayload {
+  entity: string;
+  action: string;
+  url?: string;
+  extra?: Record<string, unknown>;
+}
+
 
 export interface NotificationListResponse {
   items: Notification[];

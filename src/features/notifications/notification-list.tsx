@@ -32,6 +32,7 @@ export function NotificationList({ onNotificationClick }: NotificationListProps)
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [total, setTotal] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [now, setNow] = useState(Date.now());
 
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingUnread, setIsLoadingUnread] = useState(false);
@@ -45,13 +46,14 @@ export function NotificationList({ onNotificationClick }: NotificationListProps)
   const hasMore = notifications.length < total;
 
   useEffect(() => {
-    loadUnreadCount();
-    const interval = setInterval(loadUnreadCount, 30000);
-    return () => clearInterval(interval);
+    const onFocus = async () => await loadUnreadCount();
+
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
   }, []);
 
   useEffect(() => {
-    if (isOpen && notifications.length === 0) {
+    if (isOpen) {
       loadNotifications(1);
     }
   }, [isOpen]);
@@ -71,7 +73,6 @@ export function NotificationList({ onNotificationClick }: NotificationListProps)
   const loadNotifications = async (pageNum: number) => {
     try {
       setIsLoading(true);
-
       const res = await fetchNotifications(pageNum, limit);
 
       if (pageNum === 1) {
@@ -131,6 +132,14 @@ export function NotificationList({ onNotificationClick }: NotificationListProps)
     }
   };
 
+  useEffect(() => {
+    const id = setInterval(() => {
+      setNow(Date.now());
+    }, 60000);
+
+    return () => clearInterval(id);
+  }, []);
+
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
@@ -177,7 +186,16 @@ export function NotificationList({ onNotificationClick }: NotificationListProps)
                     className={`p-3 cursor-pointer hover:bg-accent ${!notification.is_read ? "bg-muted/50" : ""
                       }`}
                   >
-                    <h4 className="text-sm font-medium">{notification.title}</h4>
+                    <div className="flex items-start justify-between gap-2">
+                      <h4 className="text-sm font-medium">
+                        {notification.title}
+                      </h4>
+
+                      {!notification.is_read && (
+                        <span className="mt-1 h-2 w-2 rounded-full bg-blue-500 shrink-0" />
+                      )}
+                    </div>
+
 
                     <p className="text-xs text-muted-foreground line-clamp-2">
                       {notification.content}
@@ -192,7 +210,7 @@ export function NotificationList({ onNotificationClick }: NotificationListProps)
                       </Badge>
 
                       <span className="text-xs text-muted-foreground">
-                        {formatNotificationDate(notification.created_at)}
+                        {formatNotificationDate(notification.created_at, now)}
                       </span>
                     </div>
                   </div>

@@ -26,8 +26,11 @@ export function Header() {
     };
 
     const handleNotificationClick = (notification: Notification) => {
-        // Handle notification click here - navigate or perform actions
-        console.log("Notification clicked:", notification);
+        const payload = notification.payload;
+
+        if (payload?.action === "navigate") {
+            navigate(payload.url);
+        }
     };
 
     const initials =

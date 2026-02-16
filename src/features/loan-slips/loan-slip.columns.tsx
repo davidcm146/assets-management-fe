@@ -118,7 +118,6 @@ export function createLoanSlipColumns(
       id: "actions",
       header: "",
       cell: ({ row }) => {
-        console.log(row.original.status);
         const status = row.original.status;
         const isReadOnly = status === "returned" || status === "overdue";
 

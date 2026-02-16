@@ -180,7 +180,7 @@ export default function LoanSlipDetail({ id }: LoanSlipDetailProps) {
             variant="outline"
             size="icon"
             className="h-9 w-9 shrink-0 bg-transparent"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/loan-slips')}
           >
             <ArrowLeft className="h-4 w-4" />
             <span className="sr-only">Quay lại</span>

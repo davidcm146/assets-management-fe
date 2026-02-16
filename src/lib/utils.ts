@@ -36,11 +36,12 @@ export const showErrorToast = (message: string) => {
   });
 };
 
-export const formatNotificationDate = (dateString: string): string => {
+export const formatNotificationDate = (dateString: string, nowMs: number): string => {
   const date = new Date(dateString);
-  const now = new Date();
+  const diffMs = nowMs - date.getTime();
 
-  const diffMs = now.getTime() - date.getTime();
+  if (diffMs < 0) return "Vừa xong";
+
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMins / 60);
   const diffDays = Math.floor(diffHours / 24);
@@ -52,6 +53,7 @@ export const formatNotificationDate = (dateString: string): string => {
 
   return date.toLocaleDateString("vi-VN");
 };
+
 
 export const getNotificationTypeLabel = (type: NotificationType): string => {
   const map: Record<NotificationType, string> = {
