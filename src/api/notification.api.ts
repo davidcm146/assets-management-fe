@@ -12,7 +12,7 @@ export const listNotificationsApi = (
 
 export const markNotificationAsReadApi = (id: number) => {
   return api.put<MarkAsReadResponse>(
-    `/api/notifications/${id}/read`
+    `/api/notifications/${id}`
   );
 };
 
