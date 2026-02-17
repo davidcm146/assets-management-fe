@@ -3,7 +3,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Pencil } from "lucide-react";
+import { Eye, Pencil, Trash2 } from "lucide-react";
 import type { LoanSlip } from "@/types/loan-slip";
 import dayjs from "dayjs";
 
@@ -27,7 +27,8 @@ const statusConfig: Record<string, { label: string; className: string }> = {
 
 export function createLoanSlipColumns(
   onViewDetail: (id: string) => void,
-  onEdit: (loanSlip: LoanSlip) => void
+  onEdit: (loanSlip: LoanSlip) => void,
+  onDelete: (loanSlip: LoanSlip) => void
 ): ColumnDef<LoanSlip>[] {
   return [
     {
@@ -119,31 +120,50 @@ export function createLoanSlipColumns(
       header: "",
       cell: ({ row }) => {
         const status = row.original.status;
-        const isReadOnly = status === "returned" || status === "overdue";
+
+        const canEdit =
+          status !== "returned" && status !== "overdue";
+
+        const canDelete =
+          status === "borrowing";
 
         return (
-        <div className="flex items-center justify-end gap-1">
-          {!isReadOnly && (
+          <div className="flex items-center justify-end gap-1">
+
+            {canEdit && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1.5 text-muted-foreground hover:text-foreground"
+                onClick={() => onEdit(row.original)}
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                Cập nhật
+              </Button>
+            )}
+
+            {canDelete && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1.5 text-red-600 hover:text-red-700"
+                onClick={() => onDelete(row.original)}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Xóa
+              </Button>
+            )}
+
             <Button
               variant="ghost"
               size="sm"
               className="gap-1.5 text-muted-foreground hover:text-foreground"
-              onClick={() => onEdit(row.original)}
+              onClick={() => onViewDetail(row.original.id.toString())}
             >
-              <Pencil className="h-3.5 w-3.5" />
-              Cập nhật
+              <Eye className="h-3.5 w-3.5" />
+              Chi tiết
             </Button>
-          )}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-1.5 text-muted-foreground hover:text-foreground"
-            onClick={() => onViewDetail(row.original.id.toString())}
-          >
-            <Eye className="h-3.5 w-3.5" />
-            Chi tiết
-          </Button>
-        </div>
+          </div>
         );
       },
     },

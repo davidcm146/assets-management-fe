@@ -5,6 +5,7 @@ import {
   fetchLoanSlips,
   createLoanSlip,
   updateLoanSlip,
+  deleteLoanSlip,
 } from "@/features/loan-slips/loan-slip.service";
 import type {
   CreateLoanSlipPayload,
@@ -12,6 +13,16 @@ import type {
   LoanSlip,
   LoanSlipQuery,
 } from "@/types/loan-slip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { createLoanSlipColumns } from "@/features/loan-slips/loan-slip.columns";
 import { LoanSlipFilters } from "@/features/loan-slips/loan-slip-filters";
 import { DataTable } from "@/components/ui/data-table";
@@ -39,6 +50,9 @@ export default function LoanSlipManagement() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState<LoanSlipQuery>({ ...DEFAULT_QUERY });
+  const [deletingLoanSlip, setDeletingLoanSlip] = useState<LoanSlip | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const { user } = useAuth();
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -82,6 +96,33 @@ export default function LoanSlipManagement() {
     setSelectedLoanSlip(loanSlip);
     setUpdateDialogOpen(true);
   };
+
+  const handleDelete = (loanSlip: LoanSlip) => {
+    setDeletingLoanSlip(loanSlip);
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingLoanSlip) return;
+
+    try {
+      setIsDeleting(true);
+      await deleteLoanSlip(deletingLoanSlip.id);
+
+      setData((prev) =>
+        prev.filter((item) => item.id !== deletingLoanSlip.id)
+      );
+
+      setTotal((prev) => Math.max(0, prev - 1));
+
+      toast.success("Xóa phiếu mượn thành công");
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setIsDeleting(false);
+      setDeletingLoanSlip(null);
+    }
+  };
+
 
   const handleUpdate = async (values: UpdateLoanSlipFormValues) => {
     if (!selectedLoanSlip) return;
@@ -158,7 +199,8 @@ export default function LoanSlipManagement() {
     () =>
       createLoanSlipColumns(
         (id) => navigate(`/loan-slips/${id}`),
-        handleEdit
+        handleEdit,
+        handleDelete
       ),
     []
   );
@@ -234,6 +276,43 @@ export default function LoanSlipManagement() {
         loanSlip={selectedLoanSlip}
         role={user?.role}
       />
+      <AlertDialog
+        open={!!deletingLoanSlip}
+        onOpenChange={(open) => {
+          if (!open) setDeletingLoanSlip(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Xác nhận xóa phiếu mượn
+            </AlertDialogTitle>
+
+            <AlertDialogDescription>
+              Bạn có chắc muốn xóa phiếu mượn{" "}
+              <span className="font-medium">
+                {deletingLoanSlip?.name}
+              </span>
+              ? Hành động này không thể hoàn tác.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>
+              Hủy
+            </AlertDialogCancel>
+
+            <AlertDialogAction
+              onClick={confirmDelete}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? "Đang xóa..." : "Xóa"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
     </div>
   );
 }
