@@ -46,10 +46,34 @@ export function NotificationList({ onNotificationClick }: NotificationListProps)
   const hasMore = notifications.length < total;
 
   useEffect(() => {
-    const onFocus = async () => await loadUnreadCount();
+    let timeoutId: ReturnType<typeof setTimeout>;
+    let intervalId: ReturnType<typeof setInterval>;
 
-    window.addEventListener("focus", onFocus);
-    return () => window.removeEventListener("focus", onFocus);
+    const scheduleFetchAt8AM = () => {
+      const now = new Date();
+      const next = new Date();
+
+      next.setHours(8, 0, 0, 0);
+      if (now >= next) {
+        next.setDate(next.getDate() + 1);
+      }
+
+      const delay = next.getTime() - now.getTime();
+
+      timeoutId = setTimeout(async () => {
+        await loadUnreadCount();
+        intervalId = setInterval(loadUnreadCount, 24 * 60 * 60 * 1000);
+      }, delay);
+    };
+
+    loadUnreadCount();
+
+    scheduleFetchAt8AM();
+
+    return () => {
+      clearTimeout(timeoutId);
+      clearInterval(intervalId);
+    };
   }, []);
 
   useEffect(() => {

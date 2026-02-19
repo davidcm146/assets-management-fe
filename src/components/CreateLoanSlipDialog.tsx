@@ -162,7 +162,7 @@ export function CreateLoanSlipDialog({
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>
-                                        Ten tai san
+                                        Tên tài sản
                                         <RequiredMark />
                                     </FormLabel>
                                     <FormControl>
