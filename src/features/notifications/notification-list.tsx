@@ -53,7 +53,7 @@ export function NotificationList({ onNotificationClick }: NotificationListProps)
       const now = new Date();
       const next = new Date();
 
-      next.setHours(8, 0, 0, 0);
+      next.setHours(19, 0, 0, 0);
       if (now >= next) {
         next.setDate(next.getDate() + 1);
       }
