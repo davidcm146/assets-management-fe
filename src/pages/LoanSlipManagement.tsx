@@ -39,6 +39,9 @@ import type { CreateLoanSlipFormValues } from "@/features/loan-slips/loan-slip.s
 import type { UpdateLoanSlipFormValues } from "@/features/loan-slips/update-loan-slip.schema";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/features/auth/auth.context";
+import { handleApiError } from "@/api/error-handler";
+import type { ApiError } from "@/types/api-error";
+import axios from "axios";
 
 const DEFAULT_QUERY: LoanSlipQuery = {
   page: 1,
@@ -85,6 +88,7 @@ export default function LoanSlipManagement() {
       setData(res.items);
       setTotal(res.total);
     } catch (error) {
+      handleApiError(error as ApiError);
       if (query.page === 1) {
         setData((prev) => [created, ...prev]);
       }
@@ -92,14 +96,14 @@ export default function LoanSlipManagement() {
     }
   };
 
-  const handleEdit = (loanSlip: LoanSlip) => {
+  const handleEdit = useCallback((loanSlip: LoanSlip) => {
     setSelectedLoanSlip(loanSlip);
     setUpdateDialogOpen(true);
-  };
+  }, []);
 
-  const handleDelete = (loanSlip: LoanSlip) => {
+  const handleDelete = useCallback((loanSlip: LoanSlip) => {
     setDeletingLoanSlip(loanSlip);
-  };
+  }, []);
 
   const confirmDelete = async () => {
     if (!deletingLoanSlip) return;
@@ -115,8 +119,12 @@ export default function LoanSlipManagement() {
       setTotal((prev) => Math.max(0, prev - 1));
 
       toast.success("Xóa phiếu mượn thành công");
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        toast.error(err.message);
+      } else {
+        toast.error("Xóa phiếu mượn thất bại");
+      }
     } finally {
       setIsDeleting(false);
       setDeletingLoanSlip(null);
@@ -202,7 +210,7 @@ export default function LoanSlipManagement() {
         handleEdit,
         handleDelete
       ),
-    []
+    [navigate, handleEdit, handleDelete]
   );
 
   return (

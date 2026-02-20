@@ -26,7 +26,6 @@ import {
   ImageIcon,
   ChevronLeft,
   ChevronRight,
-  X,
   AlertTriangle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -126,18 +125,31 @@ export default function LoanSlipDetail({ id }: LoanSlipDetailProps) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    setLoading(true);
-    setNotFound(false);
-    setSlip(null);
-    fetchLoanSlipById(id)
-      .then((res) => {
-        if (!res) {
-          setNotFound(true);
-        } else {
-          setSlip(res);
+    let cancelled = false;
+
+    async function load() {
+      try {
+        setLoading(true);
+        const data = await fetchLoanSlipById(id);
+
+        if (!cancelled) {
+          setSlip(data);
         }
-      })
-      .finally(() => setLoading(false));
+      } catch {
+        if (!cancelled) {
+          setNotFound(true);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   if (loading) {

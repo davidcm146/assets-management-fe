@@ -33,7 +33,7 @@ export const fetchLoanSlipById = async (
   try {
     const res = await getLoanSlipByIdApi(id);
     return res.data;
-  } catch (error: any) {
+  } catch (error: unknown) {
     const apiError = getApiError(error);
 
     if (apiError.code === "NOT_FOUND") {
@@ -64,7 +64,7 @@ export const createLoanSlip = async (
 
     const res = await createLoanSlipApi(formData);
     return res.data;
-  } catch (error: any) {
+  } catch (error: unknown) {
     throw getApiError(error);
   }
 };
@@ -125,7 +125,7 @@ export async function updateLoanSlip(
 export const deleteLoanSlip = async (id: number): Promise<void> => {
   try {
     await deleteLoanSlipApi(id);
-  } catch (error: any) {
+  } catch (error: unknown) {
     throw getApiError(error);
   }
 };

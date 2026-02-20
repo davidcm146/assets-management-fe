@@ -43,8 +43,12 @@ export default function Login() {
       navigate(from, { replace: true });
 
       toast.success("Đăng nhập thành công");
-    } catch (error: any) {
-      const message = error?.message
+    } catch (error: unknown) {
+      let message = "Đăng nhập thất bại";
+
+      if (error instanceof Error) {
+        message = error.message;
+      }
 
       setError("username", { message });
       setError("password", { message });

@@ -23,6 +23,7 @@ import {
   formatNotificationDate, getNotificationTypeColor, getNotificationTypeLabel
 } from "@/lib/utils";
 import { handleApiError } from "@/api/error-handler";
+import axios from "axios";
 
 interface NotificationListProps {
   onNotificationClick?: (notification: Notification) => void;
@@ -38,12 +39,25 @@ export function NotificationList({ onNotificationClick }: NotificationListProps)
   const [isLoadingUnread, setIsLoadingUnread] = useState(false);
 
   const [isOpen, setIsOpen] = useState(false);
-
   const [page, setPage] = useState(1);
-
   const limit = 10;
-
   const hasMore = notifications.length < total;
+
+  const loadUnreadCount = useCallback(async () => {
+    try {
+      setIsLoadingUnread(true);
+      const count = await fetchUnreadCount();
+      setUnreadCount(count);
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        handleApiError(err.response?.data);
+      } else {
+        console.error(err);
+      }
+    } finally {
+      setIsLoadingUnread(false);
+    }
+  }, []);
 
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
@@ -67,32 +81,19 @@ export function NotificationList({ onNotificationClick }: NotificationListProps)
     };
 
     loadUnreadCount();
-
     scheduleFetchAt8AM();
 
     return () => {
       clearTimeout(timeoutId);
       clearInterval(intervalId);
     };
-  }, []);
+  }, [loadUnreadCount]);
 
   useEffect(() => {
     if (isOpen) {
       loadNotifications(1);
     }
   }, [isOpen]);
-
-  const loadUnreadCount = useCallback(async () => {
-    try {
-      setIsLoadingUnread(true);
-      const count = await fetchUnreadCount();
-      setUnreadCount(count);
-    } catch (err: any) {
-      handleApiError(err)
-    } finally {
-      setIsLoadingUnread(false);
-    }
-  }, []);
 
   const loadNotifications = async (pageNum: number) => {
     try {
@@ -107,8 +108,12 @@ export function NotificationList({ onNotificationClick }: NotificationListProps)
 
       setTotal(res.total);
       setPage(pageNum);
-    } catch (err: any) {
-      handleApiError(err)
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        handleApiError(err.response?.data);
+      } else {
+        console.error(err);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -134,8 +139,12 @@ export function NotificationList({ onNotificationClick }: NotificationListProps)
       );
 
       setUnreadCount((prev) => Math.max(0, prev - 1));
-    } catch (err: any) {
-      handleApiError(err);
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        handleApiError(err.response?.data);
+      } else {
+        console.error(err);
+      }
     }
   };
 

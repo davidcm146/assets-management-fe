@@ -53,7 +53,9 @@ export function LoanSlipFilters({
   onChange,
   onReset,
 }: LoanSlipFiltersProps) {
-  const [searchInput, setSearchInput] = useState(query.search ?? "");
+  const [searchInput, setSearchInput] = useState(
+    () => query.search ?? ""
+  );
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
@@ -87,10 +89,6 @@ export function LoanSlipFilters({
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, []);
-
-  useEffect(() => {
-    setSearchInput(query.search ?? "");
-  }, [query.search]);
 
   return (
     <div className="flex flex-col gap-3">

@@ -3,7 +3,7 @@
 import React from "react";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
     Dialog,
@@ -45,6 +45,7 @@ import {
 } from "@/features/loan-slips/update-loan-slip.schema";
 import { LOAN_STATUS, type LoanSlip } from "@/types/loan-slip";
 import { handleApiError } from "@/api/error-handler";
+import axios from "axios";
 
 interface UpdateLoanSlipDialogProps {
     open: boolean;
@@ -94,27 +95,32 @@ export function UpdateLoanSlipDialog({
     });
 
     const { isSubmitting, isValid } = form.formState;
-    const existingImages = form.watch("existing_images");
-    const newImages = form.watch("new_images");
+    const existingImages = useWatch({
+        control: form.control,
+        name: "existing_images",
+    });
+    const newImages = useWatch({
+        control: form.control,
+        name: "new_images",
+    });
     const totalImages = (existingImages?.length ?? 0) + (newImages?.length ?? 0);
 
     useEffect(() => {
-        if (loanSlip && open) {
-            form.reset({
-                name: loanSlip.name,
-                borrower_name: loanSlip.borrower_name,
-                department: loanSlip.department ?? "",
-                position: loanSlip.position ?? "",
-                description: loanSlip.description ?? "",
-                serial_number: loanSlip.serial_number ?? "",
-                status: mapStatusToNumber(loanSlip.status),
-                borrowed_date: parseDate(loanSlip.borrowed_date || ""),
-                returned_date: parseDate(loanSlip.returned_date || ""),
-                existing_images: loanSlip.images ?? [],
-                new_images: [],
-            });
-            setNewImagePreviews([]);
-        }
+        if (!loanSlip || !open) return;
+
+        form.reset({
+            name: loanSlip.name,
+            borrower_name: loanSlip.borrower_name,
+            department: loanSlip.department ?? "",
+            position: loanSlip.position ?? "",
+            description: loanSlip.description ?? "",
+            serial_number: loanSlip.serial_number ?? "",
+            status: mapStatusToNumber(loanSlip.status),
+            borrowed_date: parseDate(loanSlip.borrowed_date || ""),
+            returned_date: parseDate(loanSlip.returned_date || ""),
+            existing_images: loanSlip.images ?? [],
+            new_images: [],
+        });
     }, [loanSlip, open, form]);
 
     const handleClose = (isOpen: boolean) => {
@@ -128,7 +134,7 @@ export function UpdateLoanSlipDialog({
     const handleFormSubmit = async (values: UpdateLoanSlipFormValues) => {
         try {
             let payload = values;
-    
+
             if (isAdmin) {
                 payload = {
                     status: values.status,
@@ -136,14 +142,16 @@ export function UpdateLoanSlipDialog({
                     returned_date: values.returned_date,
                 };
             }
-    
+
             await onSubmit(payload);
             form.reset();
             onOpenChange(false);
-        } catch (error: any) {
-            const apiError = error
-
-            handleApiError(apiError.response.data)
+        } catch (err: unknown) {
+            if (axios.isAxiosError(err)) {
+                handleApiError(err.response?.data);
+            } else {
+                console.error(err);
+            }
         }
     };
 
@@ -311,30 +319,30 @@ export function UpdateLoanSlipDialog({
                                 const isReturned = currentStatus === LOAN_STATUS.RETURNED;
 
                                 return (
-                                <FormItem>
-                                    <FormLabel>
-                                        Trạng thái
-                                    </FormLabel>
-                                    <Select
-                                        onValueChange={(value) =>
-                                            field.onChange(Number(value) as 1 | 2)
-                                        }
-                                        value={String(field.value)}
-                                    >
-                                        <FormControl>
-                                            <SelectTrigger className="w-full">
-                                                <SelectValue placeholder="Chon trang thai" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {!isReturned && (
-                                                <SelectItem value={String(LOAN_STATUS.BORROWING)}>Đang mượn</SelectItem>
-                                            )}
-                                            <SelectItem value={String(LOAN_STATUS.RETURNED)}>Đã trả</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
+                                    <FormItem>
+                                        <FormLabel>
+                                            Trạng thái
+                                        </FormLabel>
+                                        <Select
+                                            onValueChange={(value) =>
+                                                field.onChange(Number(value) as 1 | 2)
+                                            }
+                                            value={String(field.value)}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder="Chon trang thai" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {!isReturned && (
+                                                    <SelectItem value={String(LOAN_STATUS.BORROWING)}>Đang mượn</SelectItem>
+                                                )}
+                                                <SelectItem value={String(LOAN_STATUS.RETURNED)}>Đã trả</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
                                 );
                             }}
                         />
@@ -472,101 +480,101 @@ export function UpdateLoanSlipDialog({
                                 const uniqueErrors = [...new Set(errorMessages)];
 
                                 return (
-                                <FormItem>
-                                    <FormLabel>
-                                        Hình ảnh
-                                        <span className="text-muted-foreground font-normal">
-                                            {" "}(tối đa 5)
-                                        </span>
-                                    </FormLabel>
-                                    <FormControl>
-                                        <div className="space-y-3">
-                                            {/* Preview grid - existing + new images */}
-                                            {((existingImages ?? []).length > 0 || newImagePreviews.length > 0) && (
-                                                <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
-                                                    {/* Existing images from server */}
-                                                    {existingImages?.map((url, index) => (
-                                                        <div
-                                                            key={`existing-${url}-${index}`}
-                                                            className="group relative aspect-square overflow-hidden rounded-lg border border-border"
-                                                        >
-                                                            <img
-                                                                src={url || "/placeholder.svg"}
-                                                                alt={`Hình ảnh ${index + 1}`}
-                                                                className="h-full w-full object-cover"
-                                                            />
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => handleExistingImageRemove(index)}
-                                                                className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground opacity-0 transition-opacity group-hover:opacity-100"
-                                                                aria-label={`Xóa hình ảnh ${index + 1}`}
+                                    <FormItem>
+                                        <FormLabel>
+                                            Hình ảnh
+                                            <span className="text-muted-foreground font-normal">
+                                                {" "}(tối đa 5)
+                                            </span>
+                                        </FormLabel>
+                                        <FormControl>
+                                            <div className="space-y-3">
+                                                {/* Preview grid - existing + new images */}
+                                                {((existingImages ?? []).length > 0 || newImagePreviews.length > 0) && (
+                                                    <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
+                                                        {/* Existing images from server */}
+                                                        {existingImages?.map((url, index) => (
+                                                            <div
+                                                                key={`existing-${url}-${index}`}
+                                                                className="group relative aspect-square overflow-hidden rounded-lg border border-border"
                                                             >
-                                                                <X className="h-3 w-3" />
-                                                            </button>
-                                                        </div>
-                                                    ))}
+                                                                <img
+                                                                    src={url || "/placeholder.svg"}
+                                                                    alt={`Hình ảnh ${index + 1}`}
+                                                                    className="h-full w-full object-cover"
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleExistingImageRemove(index)}
+                                                                    className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground opacity-0 transition-opacity group-hover:opacity-100"
+                                                                    aria-label={`Xóa hình ảnh ${index + 1}`}
+                                                                >
+                                                                    <X className="h-3 w-3" />
+                                                                </button>
+                                                            </div>
+                                                        ))}
 
-                                                    {/* New image previews */}
-                                                    {newImagePreviews.map((preview, index) => (
-                                                        <div
-                                                            key={`new-${preview.slice(0, 20)}-${index}`}
-                                                            className="group relative aspect-square overflow-hidden rounded-lg border border-dashed border-primary"
-                                                        >
-                                                            <img
-                                                                src={preview || "/placeholder.svg"}
-                                                                alt={`Hinh anh moi ${index + 1}`}
-                                                                className="h-full w-full object-cover"
-                                                            />
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => handleNewImageRemove(index)}
-                                                                className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground opacity-0 transition-opacity group-hover:opacity-100"
-                                                                aria-label={`Xóa hình ảnh mới ${index + 1}`}
+                                                        {/* New image previews */}
+                                                        {newImagePreviews.map((preview, index) => (
+                                                            <div
+                                                                key={`new-${preview.slice(0, 20)}-${index}`}
+                                                                className="group relative aspect-square overflow-hidden rounded-lg border border-dashed border-primary"
                                                             >
-                                                                <X className="h-3 w-3" />
-                                                            </button>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
+                                                                <img
+                                                                    src={preview || "/placeholder.svg"}
+                                                                    alt={`Hinh anh moi ${index + 1}`}
+                                                                    className="h-full w-full object-cover"
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleNewImageRemove(index)}
+                                                                    className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground opacity-0 transition-opacity group-hover:opacity-100"
+                                                                    aria-label={`Xóa hình ảnh mới ${index + 1}`}
+                                                                >
+                                                                    <X className="h-3 w-3" />
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
 
-                                            {/* Upload button */}
-                                            {totalImages < 5 && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => fileInputRef.current?.click()}
-                                                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/25 px-4 py-6 text-sm text-muted-foreground transition-colors hover:border-muted-foreground/50 hover:text-foreground"
-                                                >
-                                                    <ImagePlus className="h-5 w-5" />
-                                                    <span>
-                                                        Thêm hình ảnh ({totalImages}/5)
-                                                    </span>
-                                                </button>
-                                            )}
+                                                {/* Upload button */}
+                                                {totalImages < 5 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => fileInputRef.current?.click()}
+                                                        className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/25 px-4 py-6 text-sm text-muted-foreground transition-colors hover:border-muted-foreground/50 hover:text-foreground"
+                                                    >
+                                                        <ImagePlus className="h-5 w-5" />
+                                                        <span>
+                                                            Thêm hình ảnh ({totalImages}/5)
+                                                        </span>
+                                                    </button>
+                                                )}
 
-                                            <input
-                                                ref={fileInputRef}
-                                                type="file"
-                                                accept="image/jpeg,image/jpg,image/png"
-                                                multiple
-                                                className="hidden"
-                                                onChange={handleImageAdd}
-                                            />
-                                        </div>
-                                    </FormControl>
-                                    {uniqueErrors.length > 0 && (
-                                        <div className="space-y-1">
-                                            {uniqueErrors.map((msg) => (
-                                                <p
-                                                    key={msg}
-                                                    className="text-sm font-medium text-destructive"
-                                                >
-                                                    {msg}
-                                                </p>
-                                            ))}
-                                        </div>
-                                    )}
-                                </FormItem>
+                                                <input
+                                                    ref={fileInputRef}
+                                                    type="file"
+                                                    accept="image/jpeg,image/jpg,image/png"
+                                                    multiple
+                                                    className="hidden"
+                                                    onChange={handleImageAdd}
+                                                />
+                                            </div>
+                                        </FormControl>
+                                        {uniqueErrors.length > 0 && (
+                                            <div className="space-y-1">
+                                                {uniqueErrors.map((msg) => (
+                                                    <p
+                                                        key={msg}
+                                                        className="text-sm font-medium text-destructive"
+                                                    >
+                                                        {msg}
+                                                    </p>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </FormItem>
                                 );
                             }}
                         />}
@@ -580,7 +588,7 @@ export function UpdateLoanSlipDialog({
                             >
                                 Hủy
                             </Button>
-                            <Button type="submit" disabled={ isSubmitting || !isValid } className="bg-blue-700 hover:bg-blue-500">
+                            <Button type="submit" disabled={isSubmitting || !isValid} className="bg-blue-700 hover:bg-blue-500">
                                 {isSubmitting && (
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 )}

@@ -8,6 +8,7 @@ import { fetchLoanMetrics } from "@/features/dashboard/dashboard.service";
 import type { DashboardFilterQuery, LoanMetrics } from "@/types/dashboard";
 import { handleApiError } from "@/api/error-handler";
 import { DashboardFilter } from "@/components/DashboardFilter";
+import axios from "axios";
 
 export default function Home() {
   const [metrics, setMetrics] = useState<LoanMetrics | null>(null);
@@ -22,8 +23,12 @@ export default function Home() {
         setLoading(true);
         const data = await fetchLoanMetrics(filters);
         if (isMounted) setMetrics(data);
-      } catch (error: any) {
-        handleApiError(error)
+      } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+          handleApiError(error.response?.data);
+        } else {
+          console.error(error);
+        }
       } finally {
         if (isMounted) setLoading(false);
       }

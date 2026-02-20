@@ -17,7 +17,7 @@ export interface Notification {
 export interface NotificationPayload {
   entity: string;
   action: string;
-  url?: string;
+  url: string;
   extra?: Record<string, unknown>;
 }
 

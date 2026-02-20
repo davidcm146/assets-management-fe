@@ -3,7 +3,7 @@
 import React from "react"
 
 import { useCallback, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
     Dialog,
@@ -38,6 +38,7 @@ import {
     type CreateLoanSlipFormValues,
 } from "@/features/loan-slips/loan-slip.schema";
 import { handleApiError } from "@/api/error-handler";
+import axios from "axios";
 
 interface CreateLoanSlipDialogProps {
     open: boolean;
@@ -73,7 +74,10 @@ export function CreateLoanSlipDialog({
         },
     });
     const { isSubmitting, isValid } = form.formState;
-    const currentImages = form.watch("images");
+    const currentImages = useWatch({
+        control: form.control,
+        name: "images",
+    });
 
     const handleClose = (isOpen: boolean) => {
         if (!isOpen) {
@@ -90,10 +94,12 @@ export function CreateLoanSlipDialog({
             form.reset();
             setImagePreviews([]);
             onOpenChange(false);
-        } catch (err: any) {
-            const apiError = err;
-
-            handleApiError(apiError.response.data);
+        } catch (err: unknown) {
+            if (axios.isAxiosError(err)) {
+                handleApiError(err.response?.data);
+            } else {
+                console.error(err);
+            }
         }
     };
 
@@ -384,79 +390,79 @@ export function CreateLoanSlipDialog({
                                 const uniqueErrors = [...new Set(errorMessages)];
 
                                 return (
-                                <FormItem>
-                                    <FormLabel>
-                                        Hình ảnh{" "}
-                                        <span className="text-muted-foreground font-normal">
-                                            (Tối đa 5)
-                                        </span>
-                                    </FormLabel>
-                                    <FormControl>
-                                        <div className="space-y-3">
-                                            {/* Preview grid */}
-                                            {imagePreviews.length > 0 && (
-                                                <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
-                                                    {imagePreviews.map((preview, index) => (
-                                                        <div
-                                                            key={`${preview.slice(0, 20)}-${index}`}
-                                                            className="group relative aspect-square overflow-hidden rounded-lg border border-border"
-                                                        >
-                                                            <img
-                                                                src={preview || "/placeholder.svg"}
-                                                                alt={`Hình ảnh ${index + 1}`}
-                                                                className="h-full w-full object-cover"
-                                                            />
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => handleImageRemove(index)}
-                                                                className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground opacity-0 transition-opacity group-hover:opacity-100"
-                                                                aria-label={`Xóa hình ảnh ${index + 1}`}
+                                    <FormItem>
+                                        <FormLabel>
+                                            Hình ảnh{" "}
+                                            <span className="text-muted-foreground font-normal">
+                                                (Tối đa 5)
+                                            </span>
+                                        </FormLabel>
+                                        <FormControl>
+                                            <div className="space-y-3">
+                                                {/* Preview grid */}
+                                                {imagePreviews.length > 0 && (
+                                                    <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
+                                                        {imagePreviews.map((preview, index) => (
+                                                            <div
+                                                                key={`${preview.slice(0, 20)}-${index}`}
+                                                                className="group relative aspect-square overflow-hidden rounded-lg border border-border"
                                                             >
-                                                                <X className="h-3 w-3" />
-                                                            </button>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
+                                                                <img
+                                                                    src={preview || "/placeholder.svg"}
+                                                                    alt={`Hình ảnh ${index + 1}`}
+                                                                    className="h-full w-full object-cover"
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleImageRemove(index)}
+                                                                    className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground opacity-0 transition-opacity group-hover:opacity-100"
+                                                                    aria-label={`Xóa hình ảnh ${index + 1}`}
+                                                                >
+                                                                    <X className="h-3 w-3" />
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
 
-                                            {/* Upload button */}
-                                            {(currentImages?.length ?? 0) < 5 && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => fileInputRef.current?.click()}
-                                                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/25 px-4 py-6 text-sm text-muted-foreground transition-colors hover:border-muted-foreground/50 hover:text-foreground"
-                                                >
-                                                    <ImagePlus className="h-5 w-5" />
-                                                    <span>
-                                                        Thêm hình ảnh ({currentImages?.length ?? 0}
-                                                        /5)
-                                                    </span>
-                                                </button>
-                                            )}
+                                                {/* Upload button */}
+                                                {(currentImages?.length ?? 0) < 5 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => fileInputRef.current?.click()}
+                                                        className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/25 px-4 py-6 text-sm text-muted-foreground transition-colors hover:border-muted-foreground/50 hover:text-foreground"
+                                                    >
+                                                        <ImagePlus className="h-5 w-5" />
+                                                        <span>
+                                                            Thêm hình ảnh ({currentImages?.length ?? 0}
+                                                            /5)
+                                                        </span>
+                                                    </button>
+                                                )}
 
-                                            <input
-                                                ref={fileInputRef}
-                                                type="file"
-                                                accept="image/jpeg,image/jpg,image/png,image/webp"
-                                                multiple
-                                                className="hidden"
-                                                onChange={handleImageAdd}
-                                            />
-                                        </div>
-                                    </FormControl>
-                                    {uniqueErrors.length > 0 && (
-                                        <div className="space-y-1">
-                                            {uniqueErrors.map((msg) => (
-                                                <p
-                                                    key={msg}
-                                                    className="text-sm font-medium text-destructive"
-                                                >
-                                                    {msg}
-                                                </p>
-                                            ))}
-                                        </div>
-                                    )}
-                                </FormItem>
+                                                <input
+                                                    ref={fileInputRef}
+                                                    type="file"
+                                                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                                                    multiple
+                                                    className="hidden"
+                                                    onChange={handleImageAdd}
+                                                />
+                                            </div>
+                                        </FormControl>
+                                        {uniqueErrors.length > 0 && (
+                                            <div className="space-y-1">
+                                                {uniqueErrors.map((msg) => (
+                                                    <p
+                                                        key={msg}
+                                                        className="text-sm font-medium text-destructive"
+                                                    >
+                                                        {msg}
+                                                    </p>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </FormItem>
                                 );
                             }}
                         />
@@ -470,7 +476,7 @@ export function CreateLoanSlipDialog({
                             >
                                 Hủy
                             </Button>
-                            <Button type="submit" disabled={ isSubmitting || !isValid } className="bg-blue-700 hover:bg-blue-500">
+                            <Button type="submit" disabled={isSubmitting || !isValid} className="bg-blue-700 hover:bg-blue-500">
                                 {isSubmitting && (
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 )}

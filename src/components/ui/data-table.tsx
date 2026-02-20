@@ -18,8 +18,8 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-interface DataTableProps<TData> {
-  columns: ColumnDef<TData, any>[];
+interface DataTableProps<TData, TValue> {
+  columns: ColumnDef<TData, TValue>[];
   data: TData[];
   loading?: boolean;
 }
@@ -28,7 +28,9 @@ export function DataTable<TData>({
   columns,
   data,
   loading,
-}: DataTableProps<TData>) {
+}: DataTableProps<TData, unknown>) {
+  
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data,
     columns,
