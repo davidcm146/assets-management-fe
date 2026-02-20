@@ -41,8 +41,8 @@ export function DashboardFilter({ onChange }: Props) {
   const handleFromDateChange = (date: Date | undefined) => {
     setFromDate(date);
     if (date && toDate) {
-      const from = dayjs(date).format("YYYY-MM-DD");
-      const to = dayjs(toDate).format("YYYY-MM-DD");
+      const from = dayjs(date).format("DD-MM-YYYY");
+      const to = dayjs(toDate).format("DD-MM-YYYY");
       setIsUsingDateRange(true);
       onChange({ from, to });
     }
@@ -51,8 +51,8 @@ export function DashboardFilter({ onChange }: Props) {
   const handleToDateChange = (date: Date | undefined) => {
     setToDate(date);
     if (fromDate && date) {
-      const from = dayjs(fromDate).format("YYYY-MM-DD");
-      const to = dayjs(date).format("YYYY-MM-DD");
+      const from = dayjs(fromDate).format("DD-MM-YYYY");
+      const to = dayjs(date).format("DD-MM-YYYY");
       setIsUsingDateRange(true);
       onChange({ from, to });
     }

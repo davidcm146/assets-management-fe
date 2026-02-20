@@ -215,7 +215,6 @@ export function LoanSlipFilters({
                   <SelectItem value="__all__">Tất cả</SelectItem>
                   <SelectItem value="borrowing">Đang mượn</SelectItem>
                   <SelectItem value="returned">Đã trả</SelectItem>
-                  <SelectItem value="overdue">Quá hạn</SelectItem>
                 </SelectContent>
               </Select>
             </FilterField>
@@ -335,9 +334,11 @@ function DateRangeFilter({
                     : undefined
                 )
               }
+              disabled={(date) =>
+                toDate ? date > toDate : false
+              }
               initialFocus
             />
-
           </PopoverContent>
         </Popover>
         {from && (
@@ -383,9 +384,11 @@ function DateRangeFilter({
                     : undefined
                 )
               }
+              disabled={(date) =>
+                fromDate ? date < fromDate : false
+              }
               initialFocus
             />
-
           </PopoverContent>
         </Popover>
         {to && (
