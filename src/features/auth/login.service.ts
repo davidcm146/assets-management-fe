@@ -6,7 +6,6 @@ import type { LoginFormValues } from "./login.schema";
 export const loginService = async (data: LoginFormValues) => {
   try {
     const loginRes = await loginApi(data);
-    console.log(data);
     setAccessToken(loginRes.data.token);
     return await meApi();
   } catch (error) {

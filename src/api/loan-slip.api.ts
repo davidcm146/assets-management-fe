@@ -33,3 +33,7 @@ export const updateLoanSlipApi = (
     },
   });
 };
+
+export const deleteLoanSlipApi = (id: number) => {
+  return api.delete(`/api/loan-slips/${id}`);
+};

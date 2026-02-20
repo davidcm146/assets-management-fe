@@ -1,4 +1,4 @@
-import { createLoanSlipApi, getLoanSlipByIdApi, getLoanSlipsApi, updateLoanSlipApi } from "@/api/loan-slip.api";
+import { createLoanSlipApi, deleteLoanSlipApi, getLoanSlipByIdApi, getLoanSlipsApi, updateLoanSlipApi } from "@/api/loan-slip.api";
 import { getApiError } from "@/api/error-handler";
 import type {
   LoanSlipListResponse,
@@ -121,3 +121,12 @@ export async function updateLoanSlip(
   const { data } = await updateLoanSlipApi(id, formData);
   return data;
 }
+
+export const deleteLoanSlip = async (id: number): Promise<void> => {
+  try {
+    await deleteLoanSlipApi(id);
+  } catch (error: any) {
+    throw getApiError(error);
+  }
+};
+

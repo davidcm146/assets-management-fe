@@ -59,6 +59,7 @@ export function CreateLoanSlipDialog({
 
     const form = useForm<CreateLoanSlipFormValues>({
         resolver: zodResolver(createLoanSlipSchema),
+        mode: "onChange",
         defaultValues: {
             name: "",
             borrower_name: "",
@@ -71,8 +72,7 @@ export function CreateLoanSlipDialog({
             images: []
         },
     });
-
-    const { isSubmitting } = form.formState;
+    const { isSubmitting, isValid } = form.formState;
     const currentImages = form.watch("images");
 
     const handleClose = (isOpen: boolean) => {
@@ -162,7 +162,7 @@ export function CreateLoanSlipDialog({
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>
-                                        Ten tai san
+                                        Tên tài sản
                                         <RequiredMark />
                                     </FormLabel>
                                     <FormControl>
@@ -344,7 +344,7 @@ export function CreateLoanSlipDialog({
                                     <FormLabel>Mô tả</FormLabel>
                                     <FormControl>
                                         <Textarea
-                                            placeholder="Nhập mô tả (10-500 ký tự)..."
+                                            placeholder="Nhập mô tả (không quá 500 ký tự)..."
                                             rows={3}
                                             {...field}
                                         />
@@ -470,7 +470,7 @@ export function CreateLoanSlipDialog({
                             >
                                 Hủy
                             </Button>
-                            <Button type="submit" disabled={isSubmitting} className="bg-blue-700 hover:bg-blue-500">
+                            <Button type="submit" disabled={ isSubmitting || !isValid } className="bg-blue-700 hover:bg-blue-500">
                                 {isSubmitting && (
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 )}

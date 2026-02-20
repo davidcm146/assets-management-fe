@@ -77,6 +77,7 @@ export function UpdateLoanSlipDialog({
 
     const form = useForm<UpdateLoanSlipFormValues>({
         resolver: zodResolver(updateLoanSlipSchema),
+        mode: "onChange",
         defaultValues: {
             name: "",
             borrower_name: "",
@@ -92,7 +93,7 @@ export function UpdateLoanSlipDialog({
         },
     });
 
-    const { isSubmitting } = form.formState;
+    const { isSubmitting, isValid } = form.formState;
     const existingImages = form.watch("existing_images");
     const newImages = form.watch("new_images");
     const totalImages = (existingImages?.length ?? 0) + (newImages?.length ?? 0);
@@ -305,7 +306,11 @@ export function UpdateLoanSlipDialog({
                         <FormField
                             control={form.control}
                             name="status"
-                            render={({ field }) => (
+                            render={({ field }) => {
+                                const currentStatus = field.value;
+                                const isReturned = currentStatus === LOAN_STATUS.RETURNED;
+
+                                return (
                                 <FormItem>
                                     <FormLabel>
                                         Trạng thái
@@ -322,14 +327,16 @@ export function UpdateLoanSlipDialog({
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            <SelectItem value={String(LOAN_STATUS.BORROWING)}>Đang mượn</SelectItem>
+                                            {!isReturned && (
+                                                <SelectItem value={String(LOAN_STATUS.BORROWING)}>Đang mượn</SelectItem>
+                                            )}
                                             <SelectItem value={String(LOAN_STATUS.RETURNED)}>Đã trả</SelectItem>
-                                            <SelectItem value={String(LOAN_STATUS.OVERDUE)}>Quá hạn</SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />
                                 </FormItem>
-                            )}
+                                );
+                            }}
                         />
 
                         {/* Two columns: Borrowed Date + Returned Date */}
@@ -573,7 +580,7 @@ export function UpdateLoanSlipDialog({
                             >
                                 Hủy
                             </Button>
-                            <Button type="submit" disabled={isSubmitting} className="bg-blue-700 hover:bg-blue-500">
+                            <Button type="submit" disabled={ isSubmitting || !isValid } className="bg-blue-700 hover:bg-blue-500">
                                 {isSubmitting && (
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 )}
